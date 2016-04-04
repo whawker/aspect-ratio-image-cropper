@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Image Cropper</title>
+    <style>
+        body {
+            font-family: Verdana, sans-serif;
+        }
+
+        #source {
+            display: none;
+        }
+
+        #crop-area {
+            height: 800px;
+            width: 800px;
+        }
+    </style>
+</head>
+<body>
+
+<label for="aspect">Aspect Ratio:</label>
+<select id="aspect">
+    <option value="1:1">1:1 (Square)</option>
+    <option value="3:2">3:2 (35mm Classic)</option>
+    <option value="4:3">4:3 (Digital standard)</option>
+    <option value="16:9" selected>16:9 (Widescreen)</option>
+</select>
+
+<div id="crop-area"></div>
+
+<div>
+    <h3>Result</h3>
+    <img id="result" />
+</div>
+
+<!--<img src="./arcadia.png" id="source" />-->
+<img src="./grumpy_cat.jpg" id="source" />
+
+<script src="dist/aspect-ratio-image-cropper.js"></script>
+<script>
+    (function () {
+        var crop = new Cropper(document.getElementById('crop-area'), {
+                image: document.getElementById('source'),
+                aspectRatio: '16:9',
+                handleWidth: 16,
+                handleOffset: -10
+            }),
+            result = document.getElementById('result');
+
+        crop.on('image-loaded', function () {
+            console.log('image-loaded');
+            crop.setMinimumWidth(100);
+        });
+
+        crop.on('draw-selection-tool', function (ctx, data) {
+            ctx.strokeStyle = 'orange';
+            ctx.strokeWidth = 2;
+            ctx.strokeRect(data.posX, data.posY, data.width, data.height);
+        });
+
+        crop.on('before-selection', function (ctx, data) {
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        });
+
+        crop.on('selection', function (ctx, data) {
+            result.src = crop.getCroppedDataUrl(ctx, data);
+        });
+
+        crop.on('draw-handle', function (ctx, data) {
+            ctx.fillStyle = 'orange';
+            ctx.fillRect(data.left, data.top, data.width, data.height);
+        });
+
+        document.getElementById('aspect').addEventListener('change', function (e) {
+            crop.setAspectRatio(e.srcElement.value);
+        });
+    }())
+</script>
+
+</body>
+</html>
